@@ -1,0 +1,62 @@
+{
+    "title": "portfolio_snapshots",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "total_value_try": {
+            "type": "number",
+            "description": "Total portfolio value in TRY"
+        },
+        "total_value_usd": {
+            "type": "number",
+            "description": "Total portfolio value in USD"
+        },
+        "total_value_eur": {
+            "type": "number",
+            "description": "Total portfolio value in EUR"
+        },
+        "gold_value": {
+            "type": "number",
+            "description": "Total gold value"
+        },
+        "crypto_value": {
+            "type": "number",
+            "description": "Total crypto value"
+        },
+        "stock_value": {
+            "type": "number",
+            "description": "Total stock value"
+        },
+        "currency_value": {
+            "type": "number",
+            "description": "Total currency/cash value"
+        },
+        "other_value": {
+            "type": "number",
+            "description": "Total other assets value"
+        },
+        "snapshot_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Snapshot date"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "total_value_try",
+        "snapshot_date"
+    ]
+}

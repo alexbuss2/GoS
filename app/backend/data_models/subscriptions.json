@@ -1,0 +1,56 @@
+{
+    "title": "subscriptions",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "plan_type": {
+            "type": "string",
+            "description": "Subscription plan type: free or pro"
+        },
+        "is_pro": {
+            "type": "boolean",
+            "description": "Whether user has PRO subscription"
+        },
+        "stripe_customer_id": {
+            "type": "string",
+            "description": "Stripe customer ID"
+        },
+        "stripe_subscription_id": {
+            "type": "string",
+            "description": "Stripe subscription ID"
+        },
+        "subscription_start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Subscription start date"
+        },
+        "subscription_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Subscription end date"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "plan_type",
+        "is_pro"
+    ]
+}

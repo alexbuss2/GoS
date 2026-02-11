@@ -1,0 +1,70 @@
+{
+    "title": "transactions",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "asset_id": {
+            "type": "integer",
+            "description": "Related asset ID"
+        },
+        "asset_name": {
+            "type": "string",
+            "description": "Asset name"
+        },
+        "transaction_type": {
+            "type": "string",
+            "description": "Transaction type (buy, sell)"
+        },
+        "quantity": {
+            "type": "number",
+            "description": "Transaction quantity"
+        },
+        "price_per_unit": {
+            "type": "number",
+            "description": "Price per unit at transaction"
+        },
+        "total_amount": {
+            "type": "number",
+            "description": "Total transaction amount"
+        },
+        "currency": {
+            "type": "string",
+            "description": "Currency code"
+        },
+        "profit_loss": {
+            "type": "number",
+            "description": "Profit or loss from transaction"
+        },
+        "transaction_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction date"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Transaction notes"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "asset_name",
+        "transaction_type",
+        "quantity",
+        "price_per_unit",
+        "total_amount",
+        "currency"
+    ]
+}

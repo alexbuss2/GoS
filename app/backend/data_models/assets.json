@@ -1,0 +1,79 @@
+{
+    "title": "assets",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "name": {
+            "type": "string",
+            "description": "Asset name (e.g., Gram Altın, Bitcoin)"
+        },
+        "category": {
+            "type": "string",
+            "description": "Asset category (gold, crypto, stock, currency, other)"
+        },
+        "quantity": {
+            "type": "number",
+            "description": "Amount of asset owned"
+        },
+        "purchase_price": {
+            "type": "number",
+            "description": "Purchase price per unit"
+        },
+        "purchase_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Purchase date"
+        },
+        "current_price": {
+            "type": "number",
+            "description": "Current market price per unit"
+        },
+        "currency": {
+            "type": "string",
+            "description": "Currency code (TRY, USD, EUR)"
+        },
+        "is_sold": {
+            "type": "boolean",
+            "description": "Whether the asset is sold"
+        },
+        "sold_price": {
+            "type": "number",
+            "description": "Sold price per unit (if sold)"
+        },
+        "sold_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Sold date (if sold)"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Additional notes"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Updated timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "name",
+        "category",
+        "quantity",
+        "purchase_price",
+        "currency"
+    ]
+}

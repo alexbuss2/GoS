@@ -1,0 +1,60 @@
+{
+    "title": "price_alerts",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "asset_name": {
+            "type": "string",
+            "description": "Asset name to track"
+        },
+        "asset_category": {
+            "type": "string",
+            "description": "Asset category"
+        },
+        "target_price": {
+            "type": "number",
+            "description": "Target price for alert"
+        },
+        "condition": {
+            "type": "string",
+            "description": "Alert condition (above, below)"
+        },
+        "currency": {
+            "type": "string",
+            "description": "Currency code"
+        },
+        "is_active": {
+            "type": "boolean",
+            "description": "Whether alert is active"
+        },
+        "is_triggered": {
+            "type": "boolean",
+            "description": "Whether alert has been triggered"
+        },
+        "triggered_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When alert was triggered"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "asset_name",
+        "target_price",
+        "condition",
+        "currency"
+    ]
+}

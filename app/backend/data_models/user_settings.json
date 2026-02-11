@@ -1,0 +1,49 @@
+{
+    "title": "user_settings",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "base_currency": {
+            "type": "string",
+            "description": "Preferred base currency (TRY, USD, EUR)"
+        },
+        "pin_code": {
+            "type": "string",
+            "description": "Encrypted PIN code for app lock"
+        },
+        "pin_enabled": {
+            "type": "boolean",
+            "description": "Whether PIN lock is enabled"
+        },
+        "theme": {
+            "type": "string",
+            "description": "Theme preference (dark, light)"
+        },
+        "notifications_enabled": {
+            "type": "boolean",
+            "description": "Whether notifications are enabled"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Updated timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "base_currency"
+    ]
+}
