@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Any
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,13 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
 
+    # Database
+    # Support both DATABASE_URL and DATABASE_URI for compatibility.
+    database_url: str = Field(
+        default="sqlite+aiosqlite:///./app.db",
+        validation_alias=AliasChoices("DATABASE_URL", "DATABASE_URI"),
+    )
+
     # AWS Lambda Configuration
     is_lambda: bool = False
     lambda_function_name: str = "fastapi-backend"
@@ -28,6 +36,11 @@ class Settings(BaseSettings):
     price_refresh_timeout_seconds: int = 15
     price_refresh_base_currency: str = "TRY"
     price_refresh_coingecko_vs_currency: str = "usd"
+
+    @property
+    def database_uri(self) -> str:
+        """Backward-compatible alias used by older modules."""
+        return self.database_url
 
     @property
     def backend_url(self) -> str:
