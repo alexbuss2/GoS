@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     price_refresh_base_currency: str = "TRY"
     price_refresh_coingecko_vs_currency: str = "usd"
 
+    # JWT settings (used by mobile auth token issuance)
+    jwt_secret_key: str = "change-this-secret-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+
     @property
     def database_uri(self) -> str:
         """Backward-compatible alias used by older modules."""
