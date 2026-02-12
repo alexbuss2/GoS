@@ -43,6 +43,19 @@ def _to_mobile_type(category: str) -> str:
     return _CATEGORY_ALIAS.get(value, value or "other")
 
 
+_DEFAULT_MOBILE_ASSETS = [
+    {"id": "fx_usd_try", "name": "Dolar", "category": "currency", "currency": "TRY"},
+    {"id": "fx_eur_try", "name": "Euro", "category": "currency", "currency": "TRY"},
+    {"id": "fx_gbp_try", "name": "Sterlin", "category": "currency", "currency": "TRY"},
+    {"id": "gold_gram_try", "name": "Gram Altın", "category": "gold", "currency": "TRY"},
+    {"id": "gold_quarter_try", "name": "Çeyrek Altın", "category": "gold", "currency": "TRY"},
+    {"id": "gold_ons_try", "name": "ONS Altın", "category": "gold", "currency": "TRY"},
+    {"id": "crypto_btc", "name": "Bitcoin", "category": "crypto", "currency": "USD"},
+    {"id": "crypto_eth", "name": "Ethereum", "category": "crypto", "currency": "USD"},
+    {"id": "crypto_bnb", "name": "Binance Coin", "category": "crypto", "currency": "USD"},
+]
+
+
 @router.get("", response_model=list[MobileAssetResponse])
 async def list_mobile_assets(
     type: Optional[str] = Query(default=None, description="gold|currency|crypto"),
@@ -57,6 +70,40 @@ async def list_mobile_assets(
     response: list[MobileAssetResponse] = []
     now = datetime.now(timezone.utc)
     requested_type = (type or "").strip().lower()
+
+    if not items:
+        # Fallback for fresh installs: provide a default market catalog from live providers.
+        market_prices = await provider.fetch_market_prices()
+        for template in _DEFAULT_MOBILE_ASSETS:
+            mobile_type = _to_mobile_type(template["category"])
+            if requested_type and mobile_type != requested_type:
+                continue
+
+            current_price = await provider.resolve_asset_price(
+                name=template["name"],
+                category=template["category"],
+                currency=template["currency"],
+                market_prices=market_prices,
+            )
+            if not isinstance(current_price, (int, float)) or current_price <= 0:
+                continue
+
+            previous_price = float(current_price) * 0.997
+            change_percent = ((float(current_price) - previous_price) / previous_price) * 100.0
+            response.append(
+                MobileAssetResponse(
+                    id=template["id"],
+                    name=template["name"],
+                    symbol=provider.infer_asset_symbol(template["name"], template["category"]),
+                    type=mobile_type,
+                    current_price=float(current_price),
+                    previous_price=previous_price,
+                    change_percent=change_percent,
+                    image_url=None,
+                    updated_at=now,
+                )
+            )
+        return response
 
     for row in items:
         mobile_type = _to_mobile_type(row.category)
