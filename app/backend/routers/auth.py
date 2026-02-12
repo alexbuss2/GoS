@@ -1,5 +1,7 @@
+import hashlib
 import logging
 import os
+from datetime import datetime, timezone
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -75,6 +77,87 @@ def get_dynamic_backend_url(request: Request) -> str:
 
 def derive_name_from_email(email: str) -> str:
     return email.split("@", 1)[0] if email else ""
+
+
+class EmailPasswordAuthRequest(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+
+
+def _platform_sub_from_email(email: str) -> str:
+    normalized = (email or "").strip().lower()
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return f"email:{digest[:24]}"
+
+
+def _build_mobile_user_payload(user: User) -> dict:
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "is_pro": False,
+        "pro_expires_at": None,
+        "watchlist_asset_ids": [],
+        "created_at": (
+            user.created_at.isoformat() if getattr(user, "created_at", None) else datetime.now(timezone.utc).isoformat()
+        ),
+    }
+
+
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register_mobile_user(
+    payload: EmailPasswordAuthRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Compatibility endpoint for Flutter email/password registration."""
+    email = (payload.email or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
+    if not payload.password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is required")
+
+    auth_service = AuthService(db)
+    user = await auth_service.get_or_create_user(
+        platform_sub=_platform_sub_from_email(email),
+        email=email,
+        name=payload.name or derive_name_from_email(email),
+    )
+    app_token, _, _ = await auth_service.issue_app_token(user=user)
+
+    return {
+        "token": app_token,
+        "user": _build_mobile_user_payload(user),
+    }
+
+
+@router.post("/login")
+async def login_mobile_user(
+    payload: EmailPasswordAuthRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Compatibility endpoint for Flutter email/password login."""
+    email = (payload.email or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
+    if not payload.password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is required")
+
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(user)
+
+    auth_service = AuthService(db)
+    app_token, _, _ = await auth_service.issue_app_token(user=user)
+    return {
+        "token": app_token,
+        "user": _build_mobile_user_payload(user),
+    }
 
 
 @router.get("/login")
