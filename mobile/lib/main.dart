@@ -5,6 +5,8 @@ import 'core/constants.dart';
 import 'core/theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/asset_provider.dart';
+import 'providers/market_provider.dart';
+import 'providers/portfolio_provider.dart';
 import 'services/storage_service.dart';
 import 'services/ad_service.dart';
 import 'screens/login_screen.dart';
@@ -53,6 +55,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AssetProvider()),
+        ChangeNotifierProvider(create: (_) => MarketProvider()),
+        ChangeNotifierProvider(create: (_) => PortfolioProvider()),
       ],
       child: MaterialApp(
         title: 'BİRİKİO',

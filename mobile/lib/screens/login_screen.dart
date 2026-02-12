@@ -225,17 +225,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: authProvider.isLoading
                           ? null
                           : () async {
+                              final navigator = Navigator.of(context);
+                              final messenger = ScaffoldMessenger.of(context);
                               final success = await authProvider.signInWithGoogle();
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               if (success) {
-                                Navigator.pushReplacement(
-                                  context,
+                                navigator.pushReplacement(
                                   MaterialPageRoute(
                                     builder: (context) => const HomeScreen(),
                                   ),
                                 );
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                messenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       authProvider.errorMessage ??

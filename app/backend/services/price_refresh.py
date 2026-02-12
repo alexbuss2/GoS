@@ -6,6 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from core.config import settings
 from core.database import db_manager
 from services.assets import AssetsService
+from services.price_history import append_market_history_snapshot, purge_old_history
 from services.market_prices import MarketPriceProvider
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,18 @@ async def refresh_prices_once(trigger: str = "manual") -> dict[str, Any]:
         service = AssetsService(session)
         provider = MarketPriceProvider(timeout_seconds=settings.price_refresh_timeout_seconds)
         summary = await service.refresh_market_prices(provider=provider)
+        inserted_5m = await append_market_history_snapshot(session, bucket="5m")
+        inserted_30m = await append_market_history_snapshot(session, bucket="30m")
+        inserted_4h = await append_market_history_snapshot(session, bucket="4h")
+        inserted_1d = await append_market_history_snapshot(session, bucket="1d")
+        purged = await purge_old_history(session)
+        summary["history_inserted"] = {
+            "5m": inserted_5m,
+            "30m": inserted_30m,
+            "4h": inserted_4h,
+            "1d": inserted_1d,
+        }
+        summary["history_purged"] = purged
         logger.info("Price refresh (%s) summary: %s", trigger, summary)
         return summary
 

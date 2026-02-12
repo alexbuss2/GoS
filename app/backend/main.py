@@ -5,6 +5,7 @@ import pkgutil
 import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime
+import time
 
 from core.config import settings
 from fastapi import FastAPI, HTTPException, Request, status
@@ -69,6 +70,7 @@ def setup_logging():
 async def lifespan(app: FastAPI):
     logger = logging.getLogger(__name__)
     logger.info("=== Application startup initiated ===")
+    settings.validate_production_safety()
 
     # MODULE_STARTUP_START
     await initialize_database()
@@ -95,6 +97,22 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_timing_middleware(request: Request, call_next):
+    started = time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    response.headers["X-Process-Time-ms"] = f"{elapsed_ms:.2f}"
+    logging.getLogger("request.timing").info(
+        "path=%s method=%s status=%s duration_ms=%.2f",
+        request.url.path,
+        request.method,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
 
 
 # MODULE_MIDDLEWARE_START

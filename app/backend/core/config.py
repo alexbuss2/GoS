@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
 
+    def validate_production_safety(self) -> None:
+        environment = os.getenv("ENVIRONMENT", "prod").lower()
+        using_non_local_db = "sqlite" not in (self.database_url or "").lower()
+        if (
+            environment in {"prod", "production"}
+            and using_non_local_db
+            and self.jwt_secret_key == "change-this-secret-in-production"
+        ):
+            raise ValueError("JWT_SECRET_KEY must be set in production environment")
+
     @property
     def database_uri(self) -> str:
         """Backward-compatible alias used by older modules."""

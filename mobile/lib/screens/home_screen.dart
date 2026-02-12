@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/asset_provider.dart';
+import '../providers/market_provider.dart';
 import '../widgets/asset_card.dart';
 import '../widgets/ad_banner_widget.dart';
 import '../core/theme.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
+import 'portfolio_screen.dart';
+import 'asset_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const WatchlistTab(),
     const SearchScreen(),
+    const PortfolioScreen(),
     const ProfileScreen(),
   ];
 
@@ -34,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AssetProvider>().refreshAssets();
+      context.read<MarketProvider>().refreshData();
     });
   }
 
@@ -68,7 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
               NavigationDestination(
                 icon: Icon(Icons.search),
                 selectedIcon: Icon(Icons.search),
-                label: 'Keşfet',
+                label: 'Piyasalar',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.pie_chart_outline),
+                selectedIcon: Icon(Icons.pie_chart),
+                label: 'Portföy',
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline),
@@ -88,27 +96,15 @@ class WatchlistTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetProvider = context.watch<AssetProvider>();
+    final marketProvider = context.watch<MarketProvider>();
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('BİRİKİO'),
-            if (assetProvider.isDemoMode) ...[
-              const SizedBox(width: 8),
-              const Chip(
-                label: Text(
-                  'DEMO',
-                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
-                ),
-                backgroundColor: AppTheme.warningOrange,
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
+            Text('BİRİKİO'),
           ],
         ),
         actions: [
@@ -127,10 +123,10 @@ class WatchlistTab extends StatelessWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => assetProvider.refreshAssets(),
-        child: assetProvider.isLoading && assetProvider.watchlist.isEmpty
+        onRefresh: () => marketProvider.refreshData(),
+        child: marketProvider.isLoading && marketProvider.watchlist.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : assetProvider.watchlist.isEmpty
+            : marketProvider.watchlist.isEmpty
                 ? _buildEmptyState()
                 : Column(
                     children: [
@@ -156,7 +152,7 @@ class WatchlistTab extends StatelessWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  '${assetProvider.watchlist.length}/5 varlık izliyorsunuz',
+                                  '${marketProvider.watchlist.length}/5 varlık izliyorsunuz',
                                   style: const TextStyle(
                                     color: AppTheme.textPrimary,
                                     fontWeight: FontWeight.w500,
@@ -182,15 +178,23 @@ class WatchlistTab extends StatelessWidget {
                       
                       Expanded(
                         child: ListView.builder(
-                          itemCount: assetProvider.watchlist.length,
+                          itemCount: marketProvider.watchlist.length,
                           itemBuilder: (context, index) {
-                            final asset = assetProvider.watchlist[index];
+                            final asset = marketProvider.watchlist[index];
                             return AssetCard(
                               asset: asset,
                               showAddButton: true,
                               isInWatchlist: true,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AssetDetailScreen(asset: asset),
+                                  ),
+                                );
+                              },
                               onRemovePressed: () {
-                                assetProvider.removeFromWatchlist(asset.id);
+                                marketProvider.removeFromWatchlist(asset.id);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('${asset.name} kaldırıldı'),

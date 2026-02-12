@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/asset_provider.dart';
+import '../providers/market_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/asset_card.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
+import 'asset_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -23,6 +24,9 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MarketProvider>().loadMarketAssets();
+    });
   }
 
   @override
@@ -34,12 +38,12 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    final assetProvider = context.watch<AssetProvider>();
+    final marketProvider = context.watch<MarketProvider>();
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Varlıkları Keşfet'),
+        title: const Text('Piyasalar'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(110),
           child: Column(
@@ -79,18 +83,18 @@ class _SearchScreenState extends State<SearchScreen>
         controller: _tabController,
         children: [
           _buildAssetList(
-            assetProvider.goldAssets,
-            assetProvider,
+            marketProvider.goldAssets,
+            marketProvider,
             authProvider,
           ),
           _buildAssetList(
-            assetProvider.currencyAssets,
-            assetProvider,
+            marketProvider.currencyAssets,
+            marketProvider,
             authProvider,
           ),
           _buildAssetList(
-            assetProvider.cryptoAssets,
-            assetProvider,
+            marketProvider.cryptoAssets,
+            marketProvider,
             authProvider,
           ),
         ],
@@ -100,7 +104,7 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildAssetList(
     List assets,
-    AssetProvider assetProvider,
+    MarketProvider marketProvider,
     AuthProvider authProvider,
   ) {
     final filteredAssets = assets.where((asset) {
@@ -109,7 +113,7 @@ class _SearchScreenState extends State<SearchScreen>
           asset.symbol.toLowerCase().contains(_searchQuery);
     }).toList();
 
-    if (assetProvider.isLoading && filteredAssets.isEmpty) {
+    if (marketProvider.isLoading && filteredAssets.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -138,21 +142,29 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     return RefreshIndicator(
-      onRefresh: () => assetProvider.loadAllAssets(),
+      onRefresh: () => marketProvider.loadMarketAssets(),
       child: ListView.builder(
         itemCount: filteredAssets.length,
         itemBuilder: (context, index) {
           final asset = filteredAssets[index];
-          final isInWatchlist = assetProvider.isInWatchlist(asset.id);
+          final isInWatchlist = marketProvider.isInWatchlist(asset.id);
 
           return AssetCard(
             asset: asset,
             showAddButton: true,
             isInWatchlist: isInWatchlist,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AssetDetailScreen(asset: asset),
+                ),
+              );
+            },
             onAddPressed: () async {
               final messenger = ScaffoldMessenger.of(context);
               
-              final success = await assetProvider.addToWatchlist(
+              final success = await marketProvider.addToWatchlist(
                 asset,
                 authProvider.isPro,
               );
@@ -168,14 +180,14 @@ class _SearchScreenState extends State<SearchScreen>
                 );
               } else {
                 // Show error
-                if (assetProvider.errorMessage ==
+                if (marketProvider.errorMessage ==
                     AppConstants.errorFreeLimitReached) {
                   _showProUpgradeDialog(context);
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
                       content: Text(
-                        assetProvider.errorMessage ?? 'Bir hata oluştu',
+                        marketProvider.errorMessage ?? 'Bir hata oluştu',
                       ),
                       backgroundColor: AppTheme.errorRed,
                     ),
@@ -184,7 +196,7 @@ class _SearchScreenState extends State<SearchScreen>
               }
             },
             onRemovePressed: () {
-              assetProvider.removeFromWatchlist(asset.id);
+              marketProvider.removeFromWatchlist(asset.id);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${asset.name} kaldırıldı'),
