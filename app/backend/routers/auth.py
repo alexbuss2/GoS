@@ -20,6 +20,7 @@ from dependencies.auth import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from models.auth import User
+from pydantic import BaseModel
 from schemas.auth import (
     MobileTokenExchangeRequest,
     MobileTokenExchangeResponse,
@@ -28,6 +29,7 @@ from schemas.auth import (
     UserResponse,
 )
 from services.auth import AuthService
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
